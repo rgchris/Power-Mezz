@@ -2,6 +2,7 @@ Rebol [
 	Title: "Text encoding and decoding functions"
 	File: %text-encoding.r
 	Type: 'Module
+	Name: 'mezz.text-encoding
 	Purpose: {
 		Defines the encode-text and decode-text functions, that can encode UTF-8 text
 		into other encodings or charsets, and decode other encodings or charsets to
@@ -54,6 +55,8 @@ Rebol [
 		decode-text
 	]
 ]
+
+probe 'mezz.text-encoding
 
 make-encoding: func [spec [none! block!]][
 	case [
@@ -1504,12 +1507,12 @@ encode-text: func [
 	encobj enc
 ][
 	unless encobj: get in encodings encoding [
-		throw make error! join "Invalid encoding name: " encoding
+		do make error! join "Invalid encoding name: " encoding
 	]
 	unless output [output: make string! length? text]
 	either same? head text head output [
 		unless enc: get in encobj 'encode-inplace [
-			throw make error! rejoin [encoding " encoding does not support encoding in place"]
+			do make error! rejoin [encoding " encoding does not support encoding in place"]
 		]
 		enc text
 	][
@@ -1530,15 +1533,17 @@ decode-text: func [
 	encobj dec
 ][
 	unless encobj: get in encodings encoding [
-		throw make error! join "Invalid encoding name: " encoding
+		do make error! join "Invalid encoding name: " encoding
 	]
 	unless output [output: make string! length? text]
 	either same? head text head output [
 		unless dec: get in encobj 'decode-inplace [
-			throw make error! rejoin [encoding " encoding does not support decoding in place"]
+			do make error! rejoin [encoding " encoding does not support decoding in place"]
 		]
 		dec text
 	][
 		encobj/decode output text
 	]
 ]
+
+probe /mezz.text-encoding

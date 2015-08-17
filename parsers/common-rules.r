@@ -2,6 +2,7 @@ Rebol [
 	Title: "Common PARSE rules"
 	File: %common-rules.r
 	Type: 'Module
+	Name: 'parsers.common-rules
 	Purpose: {
 		Defines a number of common charsets and PARSE rules.
 	}
@@ -11,7 +12,7 @@ Rebol [
 		A message from Qtask about this source code:
 
 		We have selected the MIT license (as of 2010-Jan-1) because
-		it is the closest ‚Äústandard‚Äù license to our intent.  If we had our way,
+		it is the closest ‚Äö√Ñ√∫standard‚Äö√Ñ√π license to our intent.  If we had our way,
 		we would declare this source as public domain, with absolutely no
 		strings attached, not even the string that says you have to have
 		strings.  We want to help people, so please feel free to contact us
@@ -44,11 +45,16 @@ Rebol [
 		OTHER DEALINGS IN THE SOFTWARE.
 	}
 	Version: 1.1.1
-	Imports: [
+	Needs: [
 		%parsers/rule-arguments.r
 	]
-	Exports: 'All
+	Exports: [
+		ascii-char html-special-char alpha-char letter space-char digit hexdigit
+		ascii-minus-html-special letter* alphanum letter+ name do-next
+	]
 ]
+
+probe 'parsers.common-rules
 
 ascii-char: charset [#"^@" - #"^~"]
 
@@ -59,10 +65,6 @@ space-char: charset " ^/^-"
 digit: charset "1234567890"
 hexdigit: charset "1234567890abcdefABCDEF"
 ascii-minus-html-special: exclude ascii-char html-special-char
-utf8-seq2: charset [#"¿" - #"ﬂ"]
-utf8-seq3: charset [#"‡" - #"Ô"]
-utf8-seq4: charset [#"" - #"˜"]
-utf8-seq: charset [#"Ä" - #"ø"]
 letter*: union letter charset "_"
 alphanum: union alpha-char digit
 letter+: union union letter digit charset ".-_"
@@ -73,7 +75,9 @@ do-next: make-rule [
 	/local here value
 ][
 	here: skip (
-		set [value here] do/next here
+		value: do/next here 'here
 		push-result :value
 	) :here
 ]
+
+probe /parsers.common-rules

@@ -2,6 +2,7 @@ Rebol [
 	Title: "Finite State Machine interpreter"
 	File: %fsm.r
 	Type: 'Module
+	Name: 'dialects.fsm
 	Purpose: {
 		Implements a FSM interpreter; it can run stack-based FSMs defined
 		with a simple Rebol dialect.
@@ -49,9 +50,11 @@ Rebol [
 		make-fsm
 		reset-fsm
 		process-event
-		inherit "Just a handy shortcut"
+		inherit ; "Just a handy shortcut"
 	]
 ]
+
+probe 'dialects.fsm
 
 fsm-proto: context [
 	state: event: data: none
@@ -181,3 +184,5 @@ inherit: func [
 ][
 	append child parent
 ]
+
+probe /dialects.fsm

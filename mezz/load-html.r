@@ -2,6 +2,7 @@ Rebol [
 	Title: "Parse HTML text into a tree"
 	File: %load-html.r
 	Type: 'Module
+	Name: 'mezz.load-html
 	Purpose: {
 		Given an HTML text string, produces a tree representation of the document.
 	}
@@ -44,7 +45,7 @@ Rebol [
 		OTHER DEALINGS IN THE SOFTWARE.
 	}
 	Version: 1.1.4
-	Imports: [
+	Needs: [
 		%parsers/ml-parser.r
 		%mezz/niwashi.r
 		%mezz/trees.r
@@ -58,39 +59,51 @@ Rebol [
 	]
 ]
 
+probe 'mezz.load-html
+
+niwashi: none
+
 load-html: func [
 	"Load HTML text into a tree"
 	html [string!]
-	/with niwashi-rules [block!] "Use transformation rules for the niwashi"
+	/with
+		niwashi-rules [block!] "Use transformation rules for the niwashi"
 	/local
-	attach? result html-node head-node body-node title-node
+		attach? result html-node head-node body-node title-node
 ][
 	niwashi: make-niwashi
+
 	define-rules niwashi html-rules
+
 	if niwashi-rules [
 		define-rules niwashi niwashi-rules
 	]
+
 	parse-ml html func [cmd data][
 		switch cmd [
 			text whitespace comment declaration xml-proc [
 				append-child niwashi [type: cmd properties: [value: data]]
 			]
+
 			<html> <head> <title> <script> <style> <object> [
 				enter-child niwashi [type: tag-to-word cmd properties: data]
 			]
+
 			<body> <legend> <caption> <fieldset> <noscript> <ins> <del> <iframe> <tt> <i> <b> <u>
 			<strike> <s> <big> <small> <sub> <sup> <em> <strong> <dfn> <code> <samp> <kbd> <var>
 			<cite> <font> <select> <textarea> <button> <optgroup> <label> <span> <abbr>
 			<acronym> <q> <applet> [
-				attempt [
+				try [
 					split-branch niwashi 'head
 					leave-child niwashi
 				]
 				enter-child niwashi [type: tag-to-word cmd properties: data]
 			]
+
 			<isindex> <isindex/> <base> <base/> <script/> <meta> <meta/> <link> <link/> <param> <param/> [
 				append-child niwashi [type: tag-to-word cmd properties: data]
 			]
+
 			<col> <col/> <br> <br/> <basefont> <basefont/> <area> <area/> <input> <input/> [
 				attempt [
 					split-branch niwashi 'head
@@ -98,31 +111,40 @@ load-html: func [
 				]
 				append-child niwashi [type: tag-to-word cmd properties: data]
 			]
+
 			<h1> <h2> <h3> <h4> <h5> <h6> <address> <p> <ul> <ol> <dl> <pre> <dt> <dd>
 			<div> <center> <blockquote> [
 				open-tag tag-to-word cmd data [h1 h2 h3 h4 h5 h6 address p dt dd] [table]
 			]
+
 			<table> [
 				open-tag 'table data [h1 h2 h3 h4 h5 h6 address dt dd] []
 			]
+
 			<li> [
 				open-tag 'li data [li h1 h2 h3 h4 h5 h6 address p dt dd] [ul ol]
 			]
+
 			<form> [
 				open-tag 'form data 'form []
 			]
+
 			<tr> [
 				open-tag 'tr data [tr td th colgroup] 'table
 			]
+
 			<td> <th> [
 				open-tag tag-to-word cmd data [td th] 'table
 			]
+
 			<thead> <tfoot> <tbody> [
 				open-tag tag-to-word cmd data [thead tfoot tbody tr td th colgroup] 'table
 			]
+
 			<colgroup> [
 				open-tag 'colgroup data 'colgroup 'table
 			]
+
 			<hr> <hr/> [
 				attach?: no
 				unless attempt [
@@ -139,9 +161,11 @@ load-html: func [
 				append-child niwashi [type: 'hr properties: data]
 				if attach? [attach-branch niwashi]
 			]
+
 			<a> <map> <option> [
 				open-tag cmd: tag-to-word cmd data cmd []
 			]
+
 			</tt> </i> </b> </u> </strike> </s> </big> </small> </sub> </sup>
 			</em> </strong> </dfn> </code> </samp> </kbd> </var> </cite>
 			</a> </font> </map> </label> </span> </abbr> </acronym> </q> [
@@ -151,6 +175,7 @@ load-html: func [
 					attach-branch niwashi
 				]
 			]
+
 			<img> <img/> <image> <image/> [
 				attempt [
 					split-branch niwashi 'head
@@ -158,6 +183,7 @@ load-html: func [
 				]
 				append-child niwashi [type: 'img properties: data]
 			]
+
 			</head> </title> </script> </style> </object> </legend> </caption>
 			</fieldset> </noscript> </ins> </del> </iframe>
 			</h1> </h2> </h3> </h4> </h5> </h6> </address> </ul> </ol> </li> </dl> </dt>
@@ -169,6 +195,7 @@ load-html: func [
 					leave-child niwashi
 				]
 			]
+
 			</p> [
 				attempt [
 					split-branch/knots niwashi 'p 'table
@@ -177,8 +204,11 @@ load-html: func [
 			]
 		]
 	]
+
 	leave-all niwashi
+
 	result: niwashi/root
+
 	either html-node: get-node result/childs/html [
 		unless body-node: get-node html-node/childs/body [
 			body-node: make-node 'body
@@ -309,7 +339,10 @@ html-rules: [
 		]
 	]
 ]
-!set-node-value-quick: macro [node val] [(:poke) node 3 (:reduce) ['value val]]
+
+!set-node-value-quick: macro [node val][
+	(:poke) node 3 (:reduce) ['value val]
+]
 
 merge-text: func [node /local prev] expand-macros [
 	if all [prev: !get-node-previous node 'text = !get-node-type prev] [
@@ -319,7 +352,10 @@ merge-text: func [node /local prev] expand-macros [
 ]
 
 add-space: func [node /local prev text] expand-macros [
-	either all [prev: !get-node-previous node 'text = !get-node-type prev] [
+	either all [
+		prev: !get-node-previous node
+		'text = !get-node-type prev
+	][
 		text: !get-node-property prev 'value
 		unless #" " = last text [insert tail text #" "]
 		!remove-node-quick node
@@ -353,7 +389,9 @@ default-fh-options: context [
 	utf8?: false
 ]
 
-tag-to-word: func [tag] compose [(:to) (word!) (:lowercase) trim/with (:to) (string!) tag #"/"]
+tag-to-word: func [tag] compose [
+	(:to) (word!) (:lowercase) trim/with (:to) (string!) tag #"/"
+]
 
 open-tag: func [type prop split knots /local attach?][
 	unless attempt [
@@ -370,27 +408,56 @@ open-tag: func [type prop split knots /local attach?][
 	enter-child niwashi [type: type properties: prop]
 	if attach? [attach-branch niwashi]
 ]
-!emit: macro [value] [(:insert) (:tail) output value]
-!indent: macro [] [(:head) (:insert) (:tail) (:copy) indent "    "]
-!emit-attributes: macro [attributes encoding] [(:foreach) [attrname attrvalue] attributes [(:if) :attrvalue [(:either) (:word?) attrname [(:insert) (:insert) (:insert) (:tail) output #" " attrname {="}
+
+!emit: macro [value][
+	(:insert) (:tail) output value
+]
+
+!indent: macro [][
+	(:head) (:insert) (:tail) (:copy) indent "    "
+]
+
+!emit-attributes: macro [attributes encoding][
+	(:foreach) [attrname attrvalue] attributes [
+		(:if) :attrvalue [
+			(:either) (:word?) attrname [
+				(:insert) (:insert) (:insert) (:tail) output #" " attrname {="}
 				encode-text/to :attrvalue encoding output (:insert) (:tail) output #"^""
-			] [(:insert) (:insert) (:insert) (:insert) (:insert) (:tail) output
+			][
+				(:insert) (:insert) (:insert) (:insert) (:insert) (:tail) output
 				#" " (:pick) attrname 1 #":" (:pick) attrname 2 {="}
 				encode-text/to :attrvalue encoding output (:insert) (:tail) output #"^""
-			]]]]
-!open-tag: macro [name attributes encoding] expand-macros [(:insert) (:insert) (:tail) output #"<" name
+			]
+		]
+	]
+]
+
+!open-tag: macro [name attributes encoding] expand-macros [
+	(:insert) (:insert) (:tail) output #"<" name
 	!emit-attributes attributes encoding (:insert) (:tail) output #">"
 ]
-!empty-tag: macro [name attributes encoding] expand-macros [(:insert) (:insert) (:tail) output #"<" name
+
+!empty-tag: macro [name attributes encoding] expand-macros [
+	(:insert) (:insert) (:tail) output #"<" name
 	!emit-attributes attributes encoding (:insert) (:tail) output " />"
 ]
-!close-tag: macro [name] [(:insert) (:insert) (:insert) (:tail) output "</" name #">"]
-!emit-cdata: macro [text] [(:insert) (:insert) (:insert) (:tail) output
+
+!close-tag: macro [name][
+	(:insert) (:insert) (:insert) (:tail) output "</" name #">"
+]
+
+!emit-cdata: macro [text][
+	(:insert) (:insert) (:insert) (:tail) output
 	"^//* <![CDATA[ */^/"
 	text
 	"^//* ]]> */^/"
 ]
-!get-inside-text: macro [node] expand-macros [(:either) (:empty?) !get-node-childs node [""] [(:select) (:third) (:fourth) node 'value]]
+
+!get-inside-text: macro [node] expand-macros [
+	(:either) (:empty?) !get-node-childs node [""][
+		(:select) (:third) (:fourth) node 'value
+	]
+]
 
 emit-childs: func [output node indent encoding pretty? /local type] expand-macros [
 	foreach child !get-node-childs node [
@@ -450,3 +517,5 @@ emit-childs: func [output node indent encoding pretty? /local type] expand-macro
 	]
 	output
 ]
+
+probe /mezz.load-html

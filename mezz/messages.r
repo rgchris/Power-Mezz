@@ -91,7 +91,7 @@ system/error: make system/error [
 ]
 
 throw-error: func [args [block! word!]][
-	throw make error! join [Hardball] args
+	do make error! join [Hardball] args
 ]
 
 encrypt-message: func [session data /local port hmac-key hmac][
@@ -280,7 +280,7 @@ receive-message: func [
 			]
 		]
 		if recv-hdr/payload-length <> 0 [
-			throw make error! "Expand/compand not supported yet"
+			do make error! "Expand/compand not supported yet"
 		]
 	]
 	append-log 'debug [length? buffer "bytes still in the buffer"]

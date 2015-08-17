@@ -186,7 +186,7 @@ call-macro: func [
 			if empty? args [
 				no-arg near/1 pick first macro/2 1 + index? types near
 			]
-			set [value args] do/next args
+			value: do/next args 'args
 			if all [types/1 not find types/1 type?/word :value] [
 				expect-arg near/1 pick first macro/2 1 + index? types types/1 near
 			]
@@ -199,7 +199,7 @@ call-macro: func [
 			if empty? args [
 				no-arg near/1 'options near
 			]
-			set [value args] do/next args
+			value: do/next args 'args
 			unless block? :value [
 				expect-arg near/1 'options [block!] near
 			]
@@ -253,8 +253,8 @@ make-keywords: func [
 					some [
 						set value word! (
 							append actual-spec value
-							append actual-body compose/deep [
-								set [(value) args] do/next args
+							append actual-body compose [
+								set :value do/next args 'args
 							]
 						)
 						|

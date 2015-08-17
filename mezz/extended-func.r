@@ -126,5 +126,10 @@ func: make function! [
 		foreach word actual-locals [append actual-spec to word! word]
 	]
 	append actual-body body
-	throw-on-error [make function! actual-spec actual-body]
+
+	either error? actual-body: try [make function! actual-spec actual-body][
+		do :actual-body
+	][
+		:actual-body
+	]
 ]

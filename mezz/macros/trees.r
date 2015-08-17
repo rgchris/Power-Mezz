@@ -2,6 +2,7 @@ Rebol [
 	Title: "Macros for handling trees"
 	File: %trees.r
 	Type: 'Module
+	Name: 'mezz.macros.trees
 	Purpose: {
 		Provides a set of macros that create or modify trees - can be used
 		to manually optimize code that uses the mezz/trees.r module.
@@ -56,15 +57,19 @@ Rebol [
 	]
 ]
 
+probe 'mezz.macros.trees
+
 !get-node-type: macro [node] [(:first) node]
 !make-node: macro [type properties] [(:reduce) [type #[none] (:copy) properties]]
 !make-node-no-copy: macro [type properties] [(:reduce) [type #[none] properties]]
 !get-node-properties: macro [node] [(:third) node]
-!get-node-parent: macro [node] [(:all) [_tmp: (:second) node (:head) _tmp]]
+!get-node-parent: macro [node] [(:use) [_tmp][(:all) [_tmp: (:second) node (:head) _tmp]]]
 !set-node-parent-quick: macro [node parent] [insert/only (:poke) node 2 (:tail) parent/only node]
-!get-node-previous: macro [node] [(:all) [_tmp: (:second) node 4 < (:index?) _tmp (:pick) _tmp -1]]
+!get-node-previous: macro [node] [(:use) [_tmp][(:all) [_tmp: (:second) node 4 < (:index?) _tmp (:pick) _tmp -1]]]
 !remove-node-quick: macro [node] [(:remove) (:second) node (:poke) node 2 #[none]]
 !set-node-type: macro [node type] [(:poke) node 1 type]
 !get-node-childs: macro [node] [(:at) node 4]
 !get-node-property: macro [node property] [(:select) (:third) node property]
 !set-node-properties: macro [node properties] [(:poke) node 3 properties]
+
+probe /mezz.macros.trees

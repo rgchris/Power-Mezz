@@ -2,6 +2,7 @@ Rebol [
 	Title: "Arguments for PARSE rules"
 	File: %rule-arguments.r
 	Type: 'Module
+	Name: 'parsers.rule-arguments
 	Purpose: {
 		A way to pass arguments to PARSE rules, so that it becomes possible
 		to define parametrized rules.
@@ -53,6 +54,8 @@ Rebol [
 	]
 ]
 
+probe 'parsers.rule-arguments
+
 stack: []
 
 push-arguments: func [
@@ -74,18 +77,23 @@ pop-arguments: func [
 	names [block!] "Words to set to the values from the stack"
 ][
 	if greater? length? names length? stack [
-		throw make error! "Not enough arguments in the stack"
+		do make error! "Not enough arguments in the stack"
 	]
 	set names names: skip tail stack negate length? names
 	clear names
 ]
 
 pop-result: func [
-	"Pop one value from the arguments/results stack" [catch]
+	"Pop one value from the arguments/results stack"
+	/local result
 ][
-	throw-on-error [
+	either error? result: try [
 		also last stack
 		remove back tail stack
+	][
+		do :result
+	][
+		:result
 	]
 ]
 
@@ -116,3 +124,5 @@ make-rule: func [
 	bind body ctx
 	head insert/only body to paren! reduce ['pop-arguments args]
 ]
+
+probe /parsers.rule-arguments

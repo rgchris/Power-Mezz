@@ -2,6 +2,7 @@ Rebol [
 	Title: "Functions for handling trees"
 	File: %trees.r
 	Type: 'Module
+	Name: 'mezz.trees
 	Purpose: {
 		Provides a set of functions that create or modify trees (data structure
 		composed of nodes, where each node has a parent node and zero or more child nodes).
@@ -45,7 +46,7 @@ Rebol [
 		OTHER DEALINGS IN THE SOFTWARE.
 	}
 	Version: 2.1.1
-	Imports: [
+	Needs: [
 		%parsers/rule-arguments.r
 		%parsers/common-rules.r
 	]
@@ -55,20 +56,26 @@ Rebol [
 	]
 ]
 
+probe 'mezz.trees
+
 make-node: func [
 	type [word!]
 ][
 	reduce [type none copy []]
 ]
 
-node-type: 1 node-parent: 2 node-properties: 3 node-first-child: 4
+node-type: 1
+node-parent: 2
+node-properties: 3
+node-first-child: 4
+
 node?: func [
 	node [any-type!]
 ][
 	all [block? get/any 'node parse node [word! [block! | none!] block! any block!]]
 ]
 
-invalid-arg: func [val] [throw make error! compose/only [script invalid-arg (:val)]]
+invalid-arg: func [val] [do make error! compose/only [script invalid-arg (:val)]]
 
 set-assoc: func [block word value /local pos][
 	either pos: find/only block word [
@@ -150,7 +157,9 @@ set-node: func [[catch]
 ][
 	parse what: resolve-path what [
 		set word word! (
-			node: throw-on-error [get word]
+			if error? node: try [get word][
+				do :node
+			]
 			unless node? node [invalid-arg node]
 		) some [
 			'type end (
@@ -208,7 +217,7 @@ get-node: func [[catch]
 ][
 	parse what: resolve-path what [
 		set word word! (
-			node: throw-on-error [get word]
+			if error? node: try [get word] [do :node]
 			unless node? node [invalid-arg node]
 		) some [
 			'type end (return node/:node-type)
@@ -314,6 +323,7 @@ make-node-path: func [node /local result][
 	]
 	result
 ]
+
 match-path?: func [
 	current [word!]
 	pattern [word! paren!]
@@ -339,6 +349,7 @@ match-path?: func [
 		]
 	]
 ]
+
 match-type?: func [
 	node [block!]
 	type [path!]
@@ -349,11 +360,11 @@ match-type?: func [
 	match-path? node-path/1 type/1 node-path type
 ]
 
-all-step: func [[throw] value][
+all-step: func [value][
 	unless :value [return false]
 ]
 
-any-step: func [[throw] value][
+any-step: func [value][
 	if :value [return true]
 ]
 
@@ -425,6 +436,7 @@ unwrap-node: func [
 		]
 	]
 ]
+
 rewrite-tree*: func [
 	tree rules
 	/local result
@@ -450,3 +462,5 @@ rewrite-tree: func [
 		not rewrite-tree* tree rules
 	]
 ]
+
+probe /mezz.trees

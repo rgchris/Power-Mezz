@@ -2,6 +2,7 @@ Rebol [
 	Title: "[X][HT]ML Parser"
 	File: %ml-parser.r
 	Type: 'Module
+	Name: 'parsers.ml-parser
 	Purpose: "^/        Parses XML, XHTML and HTML.^/    "
 	Author: "Gabriele Santilli"
 	License: {
@@ -42,9 +43,9 @@ Rebol [
 		OTHER DEALINGS IN THE SOFTWARE.
 	}
 	Version: 1.1.2
-	Imports: [
+	Needs: [
 		%parsers/common-rules.r
-		%mezz/text-encoding.r "For decoding of HTML entities"
+		%mezz/text-encoding.r ; "For decoding of HTML entities"
 	]
 	Exports: [
 		parse-ml "Parse *ML text"
@@ -53,6 +54,10 @@ Rebol [
 		load-markup {Made global because it's a useful LOAD/MARKUP replacement}
 	]
 ]
+
+probe 'parsers.ml-parser
+
+cb: none
 
 html-rule: [
 	some [
@@ -172,7 +177,7 @@ parse-ml: func [
 	callback [any-function!]
 ][
 	cb: :callback
-	parse/all html html-rule
+	parse html html-rule
 ]
 
 load-markup: func [
@@ -205,3 +210,5 @@ load-markup: func [
 	]
 	result
 ]
+
+probe /parsers.ml-parser
